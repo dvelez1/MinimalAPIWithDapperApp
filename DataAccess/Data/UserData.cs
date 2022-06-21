@@ -1,5 +1,6 @@
 ﻿using DataAccess.DbAccess;
 using DataAccess.Models;
+using DataAccess.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,4 +37,18 @@ public class UserData : IUserData
 
     public Task DeleteUser(int id) =>
         _db.SaveData("dbo.spUser_Delete", new { Id = id });
+
+
+    // Improvement Methods
+    public async Task<UserModel?> GetUserWithDynamicParameters(UserModel userModel)
+    {
+        var results = await _db.LoadDataWithDynamicParameters<UserModel>("dbo.spUser_Get", DynamicDapperParametersMapper.DynamicParametersMapper(new {userModel.Id}));
+
+        return results.FirstOrDefault();
+    }
+
+    public Task InsertUserWithDynamicParameters(UserModel userModel) => _db.SaveDataWithDynamicParameters<UserModel>("dbo.spUser_Insert",
+        DynamicDapperParametersMapper.DynamicParametersMapper(new { userModel.FirstName, userModel.LastName }));
+   
+    
 }
