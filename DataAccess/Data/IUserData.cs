@@ -10,7 +10,7 @@ public interface IUserData
     Task InsertUser(UserModel user);
     Task UpdateUser(UserModel user);
 
-    //DynamicPar
+    //Improved Methods Dynamic Parameters
     Task<UserModel?> GetUserWithDynamicParameters(UserModel userModel);
     Task InsertUserWithDynamicParameters(UserModel userModel);
 }

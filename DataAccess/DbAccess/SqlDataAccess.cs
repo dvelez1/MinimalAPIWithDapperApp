@@ -30,7 +30,7 @@ public class SqlDataAccess : ISqlDataAccess
             commandType: CommandType.StoredProcedure);
     }
 
-    // Improvement methods with DynamicParameters
+    //Improved Methods Dynamic Parameters
     public async Task<IEnumerable<T>> LoadDataWithDynamicParameters<T>(string storedProcedure, DynamicParameters parameters, string connectionId = "Default")
     {
         using IDbConnection connection = new SqlConnection(_config.GetConnectionString(connectionId));

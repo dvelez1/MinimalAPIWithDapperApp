@@ -39,7 +39,7 @@ public class UserData : IUserData
         _db.SaveData("dbo.spUser_Delete", new { Id = id });
 
 
-    // Improvement Methods
+    //Improved Methods Dynamic Parameters
     public async Task<UserModel?> GetUserWithDynamicParameters(UserModel userModel)
     {
         var results = await _db.LoadDataWithDynamicParameters<UserModel>("dbo.spUser_Get", DynamicDapperParametersMapper.DynamicParametersMapper(new {userModel.Id}));
