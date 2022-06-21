@@ -12,6 +12,7 @@ public class SqlDataAccess : ISqlDataAccess
     public SqlDataAccess(IConfiguration config)
     {
         _config = config;
+        Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true; // Option to recognize or match database _ with PascalCase on DataModel Ex: DB: user_id -> Match or map with on Model -> UserId
     }
 
     public async Task<IEnumerable<T>> LoadData<T, U>(string storedProcedure, U parameters, string connectionId = "Default")
