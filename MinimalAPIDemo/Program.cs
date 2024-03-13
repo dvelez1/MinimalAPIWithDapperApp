@@ -10,6 +10,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<ISqlDataAccess, SqlDataAccess>();
 builder.Services.AddSingleton<IUserData, UserData>();
 
+builder.Services.AddSwaggerGen(c => c.EnableAnnotations()); // Added for data annotation
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -22,5 +24,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.ConfigureApi();
+app.ConfigurepProductApi();
 
 app.Run();
