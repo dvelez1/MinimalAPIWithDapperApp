@@ -9,6 +9,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<ISqlDataAccess, SqlDataAccess>();
 builder.Services.AddSingleton<IUserData, UserData>();
+builder.Services.AddScoped<IEntityInfo, EntityInfo>();
 
 builder.Services.AddSwaggerGen(c => c.EnableAnnotations()); // Added for data annotation
 
@@ -23,7 +24,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+/*
 app.ConfigureApi();
 app.ConfigurepProductApi();
+*/
+app.EntityInfoApi();
 
 app.Run();
