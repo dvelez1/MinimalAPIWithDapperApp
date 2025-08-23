@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DataAccess.Models;
+using Microsoft.AspNetCore.Mvc;
 using MinimalAPIDemo.Utilities;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -14,6 +15,7 @@ public static class EntityInfoService
         app.MapGet("/ExportToExcelTableColumnInfo", ExportToExcelTableColumnInfo);
         app.MapGet("/ExportToExcelStoredProcedureInfo", ExportToExcelStoredProcedureInfo);
         app.MapGet("/ExportToExcelTableTriggerInfo", ExportToExcelTableTriggerInfo);
+        app.MapGet("/ExportToExcelTableDocumentation", ExportToExcelTableDocumentation);
     }
 
     private static async Task<IResult> GetTableColumnInfo(string database, string tableName, IEntityInfo data)
@@ -57,7 +59,7 @@ public static class EntityInfoService
         try
         {
             var list = await data.GetTableColumnInfo(database, tableName);
-            var excelBytes = DynamicExcelExporter.ExportListToExcel(list);
+            var excelBytes = DynamicExcelExporter.ExportListToExcel(list,"Table Properties");
 
             return Results.File(
                 excelBytes,
@@ -77,7 +79,7 @@ public static class EntityInfoService
         try
         {
             var list = await data.GetTableStoredProcedureInfo(database, tableName);
-            var excelBytes = DynamicExcelExporter.ExportListToExcel(list);
+            var excelBytes = DynamicExcelExporter.ExportListToExcel(list,"Stored Procedures");
 
             return Results.File(
                 excelBytes,
@@ -97,13 +99,45 @@ public static class EntityInfoService
         try
         {
             var list = await data.GetTableTriggerInfo(database, tableName);
-            var excelBytes = DynamicExcelExporter.ExportListToExcel(list);
+            var excelBytes = DynamicExcelExporter.ExportListToExcel(list,"Triggers");
 
             return Results.File(
                 excelBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "Classes.xlsx"
             );
+
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(ex.Message);
+        }
+    }
+
+    private static async Task<IResult> ExportToExcelTableDocumentation(string database, string tableName, IEntityInfo data)
+    {
+        try
+        {
+            var tableProperties = await data.GetTableColumnInfo(database, tableName);
+            var storedProcedure = await data.GetTableStoredProcedureInfo(database, tableName);
+            var triggers = await data.GetTableTriggerInfo(database, tableName);
+
+
+            var exportData = new Dictionary<string, IEnumerable<object>>
+            {
+                { $"Table - {tableName}", tableProperties.Cast<object>() },
+                { "Stored Procedures", storedProcedure.Cast<object>() },
+                { "Triggers", triggers.Cast<object>() }
+            };
+
+            var excelBytes = DynamicExcelExporter.ExportMultipleListsToExcel(exportData);
+
+            return Results.File(
+              excelBytes,
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              "Classes.xlsx"
+          );
+
 
         }
         catch (Exception ex)
