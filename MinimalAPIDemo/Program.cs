@@ -1,5 +1,5 @@
 using DataAccess.DbAccess;
-using MinimalAPIDemo;
+using MinimalAPIDemo.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,5 +29,6 @@ app.ConfigureApi();
 app.ConfigurepProductApi();
 */
 app.EntityInfoApi();
+app.DatabaseAdminToolsApi();
 
 app.Run();

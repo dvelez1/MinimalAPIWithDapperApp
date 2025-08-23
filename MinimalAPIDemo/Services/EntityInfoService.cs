@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MinimalAPIDemo.Utilities;
 using Swashbuckle.AspNetCore.Annotations;
 
-namespace MinimalAPIDemo;
+namespace MinimalAPIDemo.Services;
 
 public static class EntityInfoService
 {
@@ -16,6 +16,7 @@ public static class EntityInfoService
         app.MapGet("/ExportToExcelStoredProcedureInfo", ExportToExcelStoredProcedureInfo);
         app.MapGet("/ExportToExcelTableTriggerInfo", ExportToExcelTableTriggerInfo);
         app.MapGet("/ExportToExcelTableDocumentation", ExportToExcelTableDocumentation);
+        app.MapPost("/ServiceToDocumentDatabaseOnLocalPath", ServiceToDocumentDatabaseOnLocalPath);
     }
 
     private static async Task<IResult> GetTableColumnInfo(string database, string tableName, IEntityInfo data)
@@ -135,10 +136,21 @@ public static class EntityInfoService
             return Results.File(
               excelBytes,
               "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-              "Classes.xlsx"
-          );
+              "Classes.xlsx");
 
 
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(ex.Message);
+        }
+    }
+
+    private static async Task<IResult> ServiceToDocumentDatabaseOnLocalPath(string database, string tableName, IEntityInfo data)
+    {
+        try
+        { 
+            return Results.Ok("Under Construction");
         }
         catch (Exception ex)
         {
