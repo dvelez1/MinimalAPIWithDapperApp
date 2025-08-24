@@ -11,6 +11,7 @@ builder.Services.AddSingleton<ISqlDataAccess, SqlDataAccess>();
 builder.Services.AddSingleton<IUserData, UserData>();
 builder.Services.AddScoped<IEntityInfo, EntityInfo>();
 
+
 builder.Services.AddSwaggerGen(c => c.EnableAnnotations()); // Added for data annotation
 
 var app = builder.Build();

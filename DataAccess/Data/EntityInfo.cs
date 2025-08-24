@@ -26,4 +26,7 @@ public class EntityInfo : IEntityInfo
     Task<IEnumerable<TableTriggerInfo>> IEntityInfo.GetTableTriggerInfo(string database, string tableName) =>
         _db.LoadData<TableTriggerInfo, dynamic>("dbo.sp_get_related_triggers", new { database, tableName }, "SchoolDB");
 
+    Task<IEnumerable<TableConstraintInfo>> IEntityInfo.GetTableConstraintInfo(string database, string tableName) =>
+    _db.LoadData<TableConstraintInfo, dynamic>("dbo.sp_get_table_constraints", new { database, tableName }, "SchoolDB");
+
 }

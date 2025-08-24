@@ -15,6 +15,7 @@ public static class EntityInfoService
         app.MapGet("/ExportToExcelTableColumnInfo", ExportToExcelTableColumnInfo);
         app.MapGet("/ExportToExcelStoredProcedureInfo", ExportToExcelStoredProcedureInfo);
         app.MapGet("/ExportToExcelTableTriggerInfo", ExportToExcelTableTriggerInfo);
+        app.MapGet("/ExportToExcelGetTableConstraintInfo", ExportToExcelGetTableConstraintInfo);
         app.MapGet("/ExportToExcelTableDocumentation", ExportToExcelTableDocumentation);
         app.MapPost("/ServiceToDocumentDatabaseOnLocalPath", ServiceToDocumentDatabaseOnLocalPath);
     }
@@ -65,7 +66,7 @@ public static class EntityInfoService
             return Results.File(
                 excelBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "Classes.xlsx"
+                $"{database}_{tableName}.xlsx"
             );
 
         }
@@ -85,7 +86,7 @@ public static class EntityInfoService
             return Results.File(
                 excelBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "Classes.xlsx"
+                $"{database}_{tableName}.xlsx"
             );
 
         }
@@ -105,7 +106,27 @@ public static class EntityInfoService
             return Results.File(
                 excelBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "Classes.xlsx"
+                $"{database}_{tableName}.xlsx"
+            );
+
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(ex.Message);
+        }
+    }
+
+    private static async Task<IResult> ExportToExcelGetTableConstraintInfo(string database, string tableName, IEntityInfo data)
+    {
+        try
+        {
+            var list = await data.GetTableConstraintInfo(database, tableName);
+            var excelBytes = DynamicExcelExporter.ExportListToExcel(list, "Constraint");
+
+            return Results.File(
+                excelBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"{database}_{tableName}.xlsx"
             );
 
         }
@@ -119,16 +140,19 @@ public static class EntityInfoService
     {
         try
         {
-            var tableProperties = await data.GetTableColumnInfo(database, tableName);
-            var storedProcedure = await data.GetTableStoredProcedureInfo(database, tableName);
-            var triggers = await data.GetTableTriggerInfo(database, tableName);
+            var tableProperties =  data.GetTableColumnInfo(database, tableName);
+            var storedProcedure =  data.GetTableStoredProcedureInfo(database, tableName);
+            var triggers =  data.GetTableTriggerInfo(database, tableName);
+            var tableContraints =  data.GetTableConstraintInfo(database, tableName);
 
+            await Task.WhenAll(tableProperties, storedProcedure, triggers, tableContraints);
 
             var exportData = new Dictionary<string, IEnumerable<object>>
             {
-                { $"Table - {tableName}", tableProperties.Cast<object>() },
-                { "Stored Procedures", storedProcedure.Cast<object>() },
-                { "Triggers", triggers.Cast<object>() }
+                { $"Table - {tableName}", tableProperties.Result.Cast<object>() },
+                { "Stored Procedures", storedProcedure.Result.Cast<object>() },
+                { "Triggers", triggers.Result.Cast<object>() },
+                { "Constraints", tableContraints.Result.Cast<object>() }
             };
 
             var excelBytes = DynamicExcelExporter.ExportMultipleListsToExcel(exportData);
@@ -136,7 +160,7 @@ public static class EntityInfoService
             return Results.File(
               excelBytes,
               "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-              "Classes.xlsx");
+              $"{database}_{tableName}.xlsx");
 
 
         }
