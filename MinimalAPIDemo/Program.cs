@@ -31,5 +31,6 @@ app.ConfigurepProductApi();
 */
 app.EntityInfoApi();
 app.DatabaseAdminToolsApi();
+app.ApplicationMonitoringToolApi();
 
 app.Run();
