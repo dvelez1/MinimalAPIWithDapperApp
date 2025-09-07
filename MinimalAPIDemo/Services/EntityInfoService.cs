@@ -16,6 +16,7 @@ public static class EntityInfoService
         app.MapGet("/ExportToExcelStoredProcedureInfo", ExportToExcelStoredProcedureInfo);
         app.MapGet("/ExportToExcelTableTriggerInfo", ExportToExcelTableTriggerInfo);
         app.MapGet("/ExportToExcelGetTableConstraintInfo", ExportToExcelGetTableConstraintInfo);
+        app.MapGet("/ExportToExcelGetTableIndextInfo", ExportToExcelGetTableIndextInfo);
         app.MapGet("/ExportToExcelTableDocumentation", ExportToExcelTableDocumentation);
         app.MapPost("/ServiceToDocumentDatabaseOnLocalPath", ServiceToDocumentDatabaseOnLocalPath);
     }
@@ -66,7 +67,7 @@ public static class EntityInfoService
             return Results.File(
                 excelBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"{database}_{tableName}.xlsx"
+                $"{database}_{tableName}_{DateTime.Now.ToString("yyyyMMdd_HHmm")}.xlsx"
             );
 
         }
@@ -86,7 +87,7 @@ public static class EntityInfoService
             return Results.File(
                 excelBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"{database}_{tableName}.xlsx"
+                $"{database}_{tableName}_{DateTime.Now.ToString("yyyyMMdd_HHmm")}.xlsx"
             );
 
         }
@@ -106,7 +107,7 @@ public static class EntityInfoService
             return Results.File(
                 excelBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"{database}_{tableName}.xlsx"
+                $"{database}_{tableName}_{DateTime.Now.ToString("yyyyMMdd_HHmm")}.xlsx"
             );
 
         }
@@ -126,7 +127,27 @@ public static class EntityInfoService
             return Results.File(
                 excelBytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"{database}_{tableName}.xlsx"
+                $"{database}_{tableName}_{DateTime.Now.ToString("yyyyMMdd_HHmm")}.xlsx"
+            );
+
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(ex.Message);
+        }
+    }
+
+    private static async Task<IResult> ExportToExcelGetTableIndextInfo(string database, string tableName, IEntityInfo data)
+    {
+        try
+        {
+            var list = await data.GetTableIndextInfo(database, tableName);
+            var excelBytes = DynamicExcelExporter.ExportListToExcel(list, "Indexes");
+
+            return Results.File(
+                excelBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"{database}_{tableName}_{DateTime.Now.ToString("yyyyMMdd_HHmm")}.xlsx"
             );
 
         }
@@ -144,14 +165,16 @@ public static class EntityInfoService
             var storedProcedure =  data.GetTableStoredProcedureInfo(database, tableName);
             var triggers =  data.GetTableTriggerInfo(database, tableName);
             var tableContraints =  data.GetTableConstraintInfo(database, tableName);
+            var tableIndexes = data.GetTableIndextInfo(database, tableName);
 
-            await Task.WhenAll(tableProperties, storedProcedure, triggers, tableContraints);
+            await Task.WhenAll(tableProperties, storedProcedure, triggers, tableContraints, tableIndexes);
 
             var exportData = new Dictionary<string, IEnumerable<object>>
             {
                 { $"Table - {tableName}", tableProperties.Result.Cast<object>() },
                 { "Stored Procedures", storedProcedure.Result.Cast<object>() },
                 { "Triggers", triggers.Result.Cast<object>() },
+                { "Indexes", tableIndexes.Result.Cast<object>() },
                 { "Constraints", tableContraints.Result.Cast<object>() }
             };
 
@@ -160,8 +183,7 @@ public static class EntityInfoService
             return Results.File(
               excelBytes,
               "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-              $"{database}_{tableName}.xlsx");
-
+              $"{database}_{tableName}_{DateTime.Now.ToString("yyyyMMdd_HHmm")}.xlsx");
 
         }
         catch (Exception ex)
