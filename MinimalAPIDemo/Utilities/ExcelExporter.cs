@@ -132,6 +132,68 @@ public static class DynamicExcelExporter
         return stream.ToArray();
     }
 
+    public static void ExportMultipleListsToExcelAndSave(Dictionary<string, IEnumerable<object>> namedLists,string filePath)
+    {
+        using var workbook = new XLWorkbook();
+
+        foreach (var kvp in namedLists)
+        {
+            var sheetName = kvp.Key;
+            var items = kvp.Value;
+
+            if (!items.Any())
+                continue;
+
+            var worksheet = workbook.Worksheets.Add(sheetName);
+            var firstItem = items.First();
+            var properties = firstItem.GetType().GetProperties();
+
+            // Header
+            for (int col = 0; col < properties.Length; col++)
+            {
+                worksheet.Cell(1, col + 1).Value = properties[col].Name;
+            }
+
+            // Data
+            int row = 2;
+            foreach (var item in items)
+            {
+                for (int col = 0; col < properties.Length; col++)
+                {
+                    var value = properties[col].GetValue(item);
+                    var cell = worksheet.Cell(row, col + 1);
+
+                    if (value == null)
+                    {
+                        cell.SetValue(string.Empty);
+                    }
+                    else
+                    {
+                        cell.SetValue((dynamic)value);
+
+                        switch (value)
+                        {
+                            case DateTime dt:
+                                cell.Style.DateFormat.Format = "yyyy-mm-dd";
+                                break;
+                            case TimeSpan ts:
+                                cell.Style.NumberFormat.Format = @"hh\:mm\:ss";
+                                break;
+                            case decimal or double or float:
+                                cell.Style.NumberFormat.Format = "#,##0.00";
+                                break;
+                        }
+                    }
+                }
+                row++;
+            }
+
+            worksheet.Columns().AdjustToContents();
+        }
+
+        workbook.SaveAs(filePath);
+    }
+
     public static byte[] ExportDataTableToExcel(DataTable table, string sheetName = "Data")
     {
         using var workbook = new XLWorkbook();

@@ -178,9 +178,6 @@ public static class EntityInfoService
         }
     }
 
-
-
-
     private static async Task<IResult> ExportToExcelTableDocumentation(string database, string tableName, IEntityInfo data)
     {
         try
@@ -218,11 +215,48 @@ public static class EntityInfoService
         }
     }
 
-    private static async Task<IResult> ServiceToDocumentDatabaseOnLocalPath(string database, string tableName, IEntityInfo data)
+    private static async Task<IResult> ServiceToDocumentDatabaseOnLocalPath(string database, IEntityInfo data)
     {
         try
         { 
-            return Results.Ok("Under Construction");
+            var listOfTables = await data.GetDatabaseTables(database);
+            string outputDirectory = @"C:\databaseDocumentation"; //Todo: Use AppSetting or System environment variables
+            Directory.CreateDirectory(outputDirectory);
+
+            await Parallel.ForEachAsync(listOfTables, async (table, cancellationToken) =>
+            {
+                var tableProperties = data.GetTableColumnInfo(table.DatabaseName, table.TableName);
+                var storedProcedure = data.GetTableStoredProcedureInfo(table.DatabaseName, table.TableName);
+                var triggers = data.GetTableTriggerInfo(table.DatabaseName, table.TableName);
+                var tableContraints = data.GetTableConstraintInfo(table.DatabaseName, table.TableName);
+                var tableIndexes = data.GetTableIndextInfo(table.DatabaseName, table.TableName);
+                var tableViews = data.GetTableViewsInfo(table.DatabaseName, table.TableName);
+
+                await Task.WhenAll(tableProperties, storedProcedure, triggers, tableContraints, tableIndexes);
+
+                var exportData = new Dictionary<string, IEnumerable<object>>
+            {
+                { $"Table - {table.TableName}", tableProperties.Result.Cast<object>() },
+                { "Stored Procedures", storedProcedure.Result.Cast<object>() },
+                { "Triggers", triggers.Result.Cast<object>() },
+                { "Indexes", tableIndexes.Result.Cast<object>() },
+                { "Views", tableViews.Result.Cast<object>() },
+                { "Constraints", tableContraints.Result.Cast<object>() }
+            };
+
+                string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                string fileName = $"{database}_{table.TableName}_{timestamp}.xlsx";
+
+                string tableDirectory = Path.Combine(outputDirectory, table.DatabaseName);
+                Directory.CreateDirectory(tableDirectory);
+
+                string fullPath = Path.Combine(tableDirectory, fileName);
+
+                DynamicExcelExporter.ExportMultipleListsToExcelAndSave(exportData, fullPath);
+            });
+
+            return Results.Ok("Success transaction");
+
         }
         catch (Exception ex)
         {

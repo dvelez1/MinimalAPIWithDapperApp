@@ -29,6 +29,6 @@ public class EntityInfo : IEntityInfo
     Task<IEnumerable<TableViewsInfo>> IEntityInfo.GetTableViewsInfo(string database, string tableName) =>
         _db.LoadData<TableViewsInfo, dynamic>("dbo.sp_get_table_views", new { database, tableName }, "SchoolDB");
 
-    Task<IEnumerable<DatabaseTableInfo>> IEntityInfo.GetDatabaseTables(string database, string tableName) =>
-        _db.LoadData<DatabaseTableInfo, dynamic>("dbo.sp_get_database_tables", new { database, tableName }, "SchoolDB");
+    Task<IEnumerable<DatabaseTableInfo>> IEntityInfo.GetDatabaseTables(string database) =>
+        _db.LoadData<DatabaseTableInfo, dynamic>("dbo.sp_get_database_tables", new { database }, "SchoolDB");
 }
