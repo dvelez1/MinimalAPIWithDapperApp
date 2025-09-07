@@ -17,6 +17,7 @@ public static class EntityInfoService
         app.MapGet("/ExportToExcelTableTriggerInfo", ExportToExcelTableTriggerInfo);
         app.MapGet("/ExportToExcelGetTableConstraintInfo", ExportToExcelGetTableConstraintInfo);
         app.MapGet("/ExportToExcelGetTableIndextInfo", ExportToExcelGetTableIndextInfo);
+        app.MapGet("/ExportToExcelGetTableViewsInfo", ExportToExcelGetTableViewsInfo);
         app.MapGet("/ExportToExcelTableDocumentation", ExportToExcelTableDocumentation);
         app.MapPost("/ServiceToDocumentDatabaseOnLocalPath", ServiceToDocumentDatabaseOnLocalPath);
     }
@@ -157,6 +158,29 @@ public static class EntityInfoService
         }
     }
 
+    private static async Task<IResult> ExportToExcelGetTableViewsInfo(string database, string tableName, IEntityInfo data)
+    {
+        try
+        {
+            var list = await data.GetTableViewsInfo(database, tableName);
+            var excelBytes = DynamicExcelExporter.ExportListToExcel(list, "Views");
+
+            return Results.File(
+                excelBytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"{database}_{tableName}_{DateTime.Now.ToString("yyyyMMdd_HHmm")}.xlsx"
+            );
+
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(ex.Message);
+        }
+    }
+
+
+
+
     private static async Task<IResult> ExportToExcelTableDocumentation(string database, string tableName, IEntityInfo data)
     {
         try
@@ -166,6 +190,7 @@ public static class EntityInfoService
             var triggers =  data.GetTableTriggerInfo(database, tableName);
             var tableContraints =  data.GetTableConstraintInfo(database, tableName);
             var tableIndexes = data.GetTableIndextInfo(database, tableName);
+            var tableViews = data.GetTableViewsInfo(database, tableName);
 
             await Task.WhenAll(tableProperties, storedProcedure, triggers, tableContraints, tableIndexes);
 
@@ -175,6 +200,7 @@ public static class EntityInfoService
                 { "Stored Procedures", storedProcedure.Result.Cast<object>() },
                 { "Triggers", triggers.Result.Cast<object>() },
                 { "Indexes", tableIndexes.Result.Cast<object>() },
+                { "Views", tableViews.Result.Cast<object>() },
                 { "Constraints", tableContraints.Result.Cast<object>() }
             };
 
