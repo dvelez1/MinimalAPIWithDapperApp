@@ -9,4 +9,6 @@ public interface IEntityInfo
     Task<IEnumerable<TableTriggerInfo>> GetTableTriggerInfo(string database, string tableName);
     Task<IEnumerable<TableConstraintInfo>> GetTableConstraintInfo(string database, string tableName);
     Task<IEnumerable<TableIndexInfo>> GetTableIndextInfo(string database, string tableName);
+    //TODO Pending Views
+    Task<IEnumerable<DatabaseTableInfo>> GetDatabaseTables(string database, string tableName);
 }

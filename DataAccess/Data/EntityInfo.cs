@@ -26,4 +26,6 @@ public class EntityInfo : IEntityInfo
     Task<IEnumerable<TableIndexInfo>> IEntityInfo.GetTableIndextInfo(string database, string tableName) =>
         _db.LoadData<TableIndexInfo, dynamic>("dbo.sp_get_table_indexes", new { database, tableName }, "SchoolDB");
 
+    Task<IEnumerable<DatabaseTableInfo>> IEntityInfo.GetDatabaseTables(string database, string tableName) =>
+        _db.LoadData<DatabaseTableInfo, dynamic>("dbo.sp_get_database_tables", new { database, tableName }, "SchoolDB");
 }
