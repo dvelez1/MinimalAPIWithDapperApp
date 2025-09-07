@@ -19,7 +19,7 @@ public static class EntityInfoService
         app.MapGet("/ExportToExcelGetTableIndextInfo", ExportToExcelGetTableIndextInfo);
         app.MapGet("/ExportToExcelGetTableViewsInfo", ExportToExcelGetTableViewsInfo);
         app.MapGet("/ExportToExcelTableDocumentation", ExportToExcelTableDocumentation);
-        app.MapPost("/ServiceToDocumentDatabaseOnLocalPath", ServiceToDocumentDatabaseOnLocalPath);
+        app.MapPost("/ExportTableDocumentationToDirectory", ExportTableDocumentationToDirectory);
     }
 
     private static async Task<IResult> GetTableColumnInfo(string database, string tableName, IEntityInfo data)
@@ -63,7 +63,7 @@ public static class EntityInfoService
         try
         {
             var list = await data.GetTableColumnInfo(database, tableName);
-            var excelBytes = DynamicExcelExporter.ExportListToExcel(list,"Table Properties");
+            var excelBytes = DynamicExcelExporter.ExportListToExcel(list, "Table Properties");
 
             return Results.File(
                 excelBytes,
@@ -83,7 +83,7 @@ public static class EntityInfoService
         try
         {
             var list = await data.GetTableStoredProcedureInfo(database, tableName);
-            var excelBytes = DynamicExcelExporter.ExportListToExcel(list,"Stored Procedures");
+            var excelBytes = DynamicExcelExporter.ExportListToExcel(list, "Stored Procedures");
 
             return Results.File(
                 excelBytes,
@@ -103,7 +103,7 @@ public static class EntityInfoService
         try
         {
             var list = await data.GetTableTriggerInfo(database, tableName);
-            var excelBytes = DynamicExcelExporter.ExportListToExcel(list,"Triggers");
+            var excelBytes = DynamicExcelExporter.ExportListToExcel(list, "Triggers");
 
             return Results.File(
                 excelBytes,
@@ -182,10 +182,10 @@ public static class EntityInfoService
     {
         try
         {
-            var tableProperties =  data.GetTableColumnInfo(database, tableName);
-            var storedProcedure =  data.GetTableStoredProcedureInfo(database, tableName);
-            var triggers =  data.GetTableTriggerInfo(database, tableName);
-            var tableContraints =  data.GetTableConstraintInfo(database, tableName);
+            var tableProperties = data.GetTableColumnInfo(database, tableName);
+            var storedProcedure = data.GetTableStoredProcedureInfo(database, tableName);
+            var triggers = data.GetTableTriggerInfo(database, tableName);
+            var tableContraints = data.GetTableConstraintInfo(database, tableName);
             var tableIndexes = data.GetTableIndextInfo(database, tableName);
             var tableViews = data.GetTableViewsInfo(database, tableName);
 
@@ -215,10 +215,10 @@ public static class EntityInfoService
         }
     }
 
-    private static async Task<IResult> ServiceToDocumentDatabaseOnLocalPath(string database, IEntityInfo data)
+    private static async Task<IResult> ExportTableDocumentationToDirectory(string database, IEntityInfo data)
     {
         try
-        { 
+        {
             var listOfTables = await data.GetDatabaseTables(database);
             string outputDirectory = @"C:\databaseDocumentation"; //Todo: Use AppSetting or System environment variables
             Directory.CreateDirectory(outputDirectory);
@@ -235,14 +235,14 @@ public static class EntityInfoService
                 await Task.WhenAll(tableProperties, storedProcedure, triggers, tableContraints, tableIndexes);
 
                 var exportData = new Dictionary<string, IEnumerable<object>>
-            {
-                { $"Table - {table.TableName}", tableProperties.Result.Cast<object>() },
-                { "Stored Procedures", storedProcedure.Result.Cast<object>() },
-                { "Triggers", triggers.Result.Cast<object>() },
-                { "Indexes", tableIndexes.Result.Cast<object>() },
-                { "Views", tableViews.Result.Cast<object>() },
-                { "Constraints", tableContraints.Result.Cast<object>() }
-            };
+                {
+                    { $"Table - {table.TableName}", tableProperties.Result.Cast<object>() },
+                    { "Stored Procedures", storedProcedure.Result.Cast<object>() },
+                    { "Triggers", triggers.Result.Cast<object>() },
+                    { "Indexes", tableIndexes.Result.Cast<object>() },
+                    { "Views", tableViews.Result.Cast<object>() },
+                    { "Constraints", tableContraints.Result.Cast<object>() }
+                };
 
                 string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
                 string fileName = $"{database}_{table.TableName}_{timestamp}.xlsx";
