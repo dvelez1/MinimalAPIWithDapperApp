@@ -1,4 +1,5 @@
 using DataAccess.DbAccess;
+using MinimalAPIDemo.BackgroungServices;
 using MinimalAPIDemo.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,11 @@ builder.Services.AddScoped<IEntityInfo, EntityInfo>();
 
 
 builder.Services.AddSwaggerGen(c => c.EnableAnnotations()); // Added for data annotation
+
+
+// Register the background service
+builder.Services.AddHostedService<MinuteJobService>();
+
 
 var app = builder.Build();
 
