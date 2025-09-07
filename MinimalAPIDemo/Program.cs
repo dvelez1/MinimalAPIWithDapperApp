@@ -11,6 +11,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<ISqlDataAccess, SqlDataAccess>();
 builder.Services.AddSingleton<IUserData, UserData>();
 builder.Services.AddScoped<IEntityInfo, EntityInfo>();
+builder.Services.AddScoped<IStoredProceduresInfo, StoredProceduresInfo>();  
 
 
 builder.Services.AddSwaggerGen(c => c.EnableAnnotations()); // Added for data annotation
@@ -34,9 +35,10 @@ app.UseHttpsRedirection();
 /*
 app.ConfigureApi();
 app.ConfigurepProductApi();
-*/
-app.EntityInfoApi();
 app.DatabaseAdminToolsApi();
 app.ApplicationMonitoringToolApi();
+*/
+app.EntityInfoApi();
+app.MapStoredProcedureInfoEndpoints();
 
 app.Run();
