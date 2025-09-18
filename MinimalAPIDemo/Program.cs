@@ -1,6 +1,8 @@
 using DataAccess.DbAccess;
 using MinimalAPIDemo.BackgroungServices;
 using MinimalAPIDemo.Services;
+using Reporting.DbAccess;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +13,15 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<ISqlDataAccess, SqlDataAccess>();
 builder.Services.AddSingleton<IUserData, UserData>();
 builder.Services.AddScoped<IEntityInfo, EntityInfo>();
-builder.Services.AddScoped<IStoredProceduresInfo, StoredProceduresInfo>();  
+builder.Services.AddScoped<IStoredProceduresInfo, StoredProceduresInfo>();
+
+
+// Register Reporting Related Services
+builder.Services.AddSingleton<IDbAccess>(sp =>
+    new DbAccess(builder.Configuration.GetConnectionString("SchoolDB")));
+
+builder.Services.AddSingleton<IReportExporter, ReportExporter>();
+builder.Services.AddSingleton<ReportJobRunner>();
 
 
 builder.Services.AddSwaggerGen(c => c.EnableAnnotations()); // Added for data annotation
@@ -40,5 +50,6 @@ app.ApplicationMonitoringToolApi();
 */
 app.EntityInfoApi();
 app.MapStoredProcedureInfoEndpoints();
+app.ReportingEndPoints();
 
 app.Run();
