@@ -9,6 +9,7 @@ public static class EntityInfoService
 {
     public static void EntityInfoApi(this WebApplication app)
     {
+        /*
         app.MapGet("/GetTableColumnInformation", GetTableColumnInfo);
         app.MapGet("/GetTableStoredProcedureInfo", GetTableStoredProcedureInfo);
         app.MapGet("/GetTableTriggerInfo", GetTableTriggerInfo);
@@ -18,6 +19,7 @@ public static class EntityInfoService
         app.MapGet("/ExportToExcelGetTableConstraintInfo", ExportToExcelGetTableConstraintInfo);
         app.MapGet("/ExportToExcelGetTableIndextInfo", ExportToExcelGetTableIndextInfo);
         app.MapGet("/ExportToExcelGetTableViewsInfo", ExportToExcelGetTableViewsInfo);
+        */
         app.MapGet("/ExportToExcelTableDocumentation", ExportToExcelTableDocumentation);
         app.MapPost("/ExportTableDocumentationToDirectory", ExportTableDocumentationToDirectory);
     }
@@ -191,9 +193,15 @@ public static class EntityInfoService
 
             await Task.WhenAll(tableProperties, storedProcedure, triggers, tableContraints, tableIndexes);
 
+            string sheetName = $"Table - {tableName}";
+            if (sheetName.Length > 30)
+            {
+                sheetName = sheetName.Substring(0, 30);
+            }
+
             var exportData = new Dictionary<string, IEnumerable<object>>
             {
-                { $"Table - {tableName}", tableProperties.Result.Cast<object>() },
+                { $"{sheetName}", tableProperties.Result.Cast<object>() },
                 { "Stored Procedures", storedProcedure.Result.Cast<object>() },
                 { "Triggers", triggers.Result.Cast<object>() },
                 { "Indexes", tableIndexes.Result.Cast<object>() },
@@ -234,9 +242,15 @@ public static class EntityInfoService
 
                 await Task.WhenAll(tableProperties, storedProcedure, triggers, tableContraints, tableIndexes);
 
+                string sheetName = $"Table - {table.TableName}";
+                if (sheetName.Length > 30)
+                {
+                    sheetName = sheetName.Substring(0, 30);
+                }
+
                 var exportData = new Dictionary<string, IEnumerable<object>>
                 {
-                    { $"Table - {table.TableName}", tableProperties.Result.Cast<object>() },
+                    { $"{sheetName}", tableProperties.Result.Cast<object>() },
                     { "Stored Procedures", storedProcedure.Result.Cast<object>() },
                     { "Triggers", triggers.Result.Cast<object>() },
                     { "Indexes", tableIndexes.Result.Cast<object>() },

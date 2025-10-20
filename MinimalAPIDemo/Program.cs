@@ -50,6 +50,6 @@ app.ApplicationMonitoringToolApi();
 */
 app.EntityInfoApi();
 app.MapStoredProcedureInfoEndpoints();
-app.ReportingEndPoints();
+//app.ReportingEndPoints();
 
 app.Run();
