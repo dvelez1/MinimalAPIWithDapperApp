@@ -8,7 +8,7 @@ public static class Reporting
         app.MapPost("/run-jobs", (ReportJobRunner runner) =>
         {
             runner.RunAllJobs();
-            return Results.Ok("✅ All report jobs executed.");
+            return Results.Ok("All report jobs executed.");
         }).WithName("RunAllActiveReports")
         .WithTags("Reporting");
     }
