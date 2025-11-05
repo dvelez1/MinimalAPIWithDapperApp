@@ -49,11 +49,11 @@ public class ReportJobRunner
                 var fullPath = Path.Combine(job.ExportPath, job.ExportFileName);
                 _reportExporter.Export(data, fullPath, job.ExportExtension);
 
-                Console.WriteLine($"✅ Job '{job.JobName}' completed: {fullPath}");
+                Console.WriteLine($"Job '{job.JobName}' completed: {fullPath}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Job '{job.JobName}' failed: {ex.Message}");
+                Console.WriteLine($"Job '{job.JobName}' failed: {ex.Message}");
                 // Optional: log to DB or file
             }
         }
