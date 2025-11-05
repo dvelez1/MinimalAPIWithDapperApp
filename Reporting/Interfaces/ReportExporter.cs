@@ -33,13 +33,24 @@ public class ReportExporter : IReportExporter
         }
     }
 
+
+
+    // TODO: Need to be more detailed with formatting and timestamp. Code Improvement too
     private void ExportToExcel(DataTable data, string filePath)
     {
         using var workbook = new XLWorkbook();
-        workbook.Worksheets.Add(data, "Report");
+        var worksheet = workbook.Worksheets.Add(data, "Report");
+
+        // Add timestamp below the data
+        int lastRow = worksheet.LastRowUsed().RowNumber() + 2;
+        worksheet.Cell(lastRow, 1).Value = $"Exported at: {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+
         workbook.SaveAs(filePath);
     }
 
+
+
+    // TODO: Need to be more detailed with formatting and timestamp. Code Improvement too
     private void ExportToCsv(DataTable data, string filePath)
     {
         var lines = new List<string>();
@@ -52,9 +63,11 @@ public class ReportExporter : IReportExporter
             lines.Add(string.Join(",", fields));
         }
 
+        // Add timestamp as a footer
+        lines.Add($"\"Exported at: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\"");
+
         File.WriteAllLines(filePath, lines);
     }
-
 
     //TODO: Pending correction
     private void ExportToPdf(DataTable data, string filePath)
