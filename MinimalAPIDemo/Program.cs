@@ -28,8 +28,8 @@ builder.Services.AddSwaggerGen(c => c.EnableAnnotations()); // Added for data an
 
 
 // Register the background service
-builder.Services.AddHostedService<MinuteJobService>();
-
+builder.Services.AddHostedService<MinuteJobService>(); // Example Job that runs every minute
+builder.Services.AddHostedService<CronReportJobRunner>(); // Cron based Job Runner
 
 var app = builder.Build();
 
