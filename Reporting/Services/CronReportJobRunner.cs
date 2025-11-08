@@ -73,13 +73,13 @@ public class CronReportJobRunner : BackgroundService
                             }
                             catch (Exception paramEx)
                             {
-                                Console.WriteLine($"⚠️ Job '{job.JobName}' skipped: Invalid parameters JSON — {paramEx.Message}");
+                                Console.WriteLine($"Job '{job.JobName}' skipped: Invalid parameters JSON — {paramEx.Message}");
                                 continue;
                             }
                         }
 
                         var data = _dbAccess.ExecuteStoredProcedure(job.StoredProcedure, parameters);
-                        var fullPath = Path.Combine(job.ExportPath, job.ExportFileName);
+                        var fullPath = Path.Combine(job.ExportPath, $"{job.ExportFileName}{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.{job.ExportExtension}");
                         _reportExporter.Export(data, fullPath, job.ExportExtension);
 
                         Console.WriteLine($"Job '{job.JobName}' completed: {fullPath}");
