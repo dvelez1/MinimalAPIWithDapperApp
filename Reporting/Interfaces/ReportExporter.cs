@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
+using Reporting.Models;
 
 namespace Reporting.Interfaces;
 public class ReportExporter : IReportExporter
@@ -33,13 +34,37 @@ public class ReportExporter : IReportExporter
         }
     }
 
+    public void Export(ReportJob reportJob, string filePath)
+    {
+        switch (reportJob.ExportExtension.ToLower())
+        {
+            case "xlsx":
+                // TODO
+                break;
+
+            case "csv":
+
+                //ExportToCsv(data, filePath);
+                break;
+
+            case "pdf":
+                //ExportToPdf(data, filePath);
+                break;
+
+            default:
+                throw new NotSupportedException($"Unsupported format:");
+        }
+
+        throw new NotImplementedException();
+    }
+
 
 
     // TODO: Need to be more detailed with formatting and timestamp. Code Improvement too
-    private void ExportToExcel(DataTable data, string filePath)
+    private void ExportToExcel(DataTable data, string filePath, string sheetName = "report")
     {
         using var workbook = new XLWorkbook();
-        var worksheet = workbook.Worksheets.Add(data, "Report");
+        var worksheet = workbook.Worksheets.Add(data, sheetName);
 
         // Add timestamp below the data
         int lastRow = worksheet.LastRowUsed().RowNumber() + 2;
@@ -113,5 +138,5 @@ public class ReportExporter : IReportExporter
 
     }
 
-
+   
 }

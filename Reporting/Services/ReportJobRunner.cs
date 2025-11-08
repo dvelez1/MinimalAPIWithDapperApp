@@ -63,8 +63,30 @@ public class ReportJobRunner
     private List<ReportJob> LoadActiveJobsFromDb(string connectionDb = "Default")
     {
         using var conn = new SqlConnection(_config.GetConnectionString(connectionDb));
-        string sql = @"SELECT * FROM ReportJobs WHERE IsActive = 1";
-        return conn.Query<ReportJob>(sql).ToList();
 
+        // Query active jobs
+        string jobSql = @"SELECT * FROM ReportJobs WHERE IsActive = 1";
+        var jobs = conn.Query<ReportJob>(jobSql).ToList();
+
+        // Query active additional sheets
+        string sheetSql = @"SELECT * FROM report_jobs_aditional_sheets WHERE IsActive = 1";
+        var sheets = conn.Query<ReportJobsAdditionalSheet>(sheetSql).ToList();
+
+        // Map additional sheets to their parent jobs
+        var groupedSheets = sheets
+            .Where(s => s.JobId != 0)
+            .GroupBy(s => s.JobId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        foreach (var job in jobs)
+        {
+            if (groupedSheets.TryGetValue(job.JobId, out var additionalSheets))
+            {
+                job.AdditionalSheets = additionalSheets;
+            }
+        }
+
+        return jobs;
     }
+
 }

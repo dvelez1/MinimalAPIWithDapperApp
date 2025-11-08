@@ -21,5 +21,6 @@ public class ReportJob
     public string Logo { get; set; } = string.Empty;
     public string CronExpression { get; set; } = string.Empty;
     public string CronDescription { get; set; } = string.Empty;
+    public List<ReportJobsAdditionalSheet> AdditionalSheets { get; set; } = new List<ReportJobsAdditionalSheet>();
 
 }

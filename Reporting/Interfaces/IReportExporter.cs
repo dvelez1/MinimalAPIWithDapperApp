@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Reporting.Models;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -15,4 +16,6 @@ public interface IReportExporter
     /// <param name="filePath">Full path including filename and extension</param>
     /// <param name="format">Export format: xlsx, csv, pdf</param>
     void Export(DataTable data, string filePath, string format);
+
+    void Export(ReportJob reportJobs, string filePath);
 }
