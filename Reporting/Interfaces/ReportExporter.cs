@@ -1,4 +1,12 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using Reporting.DbAccess;
+using Reporting.Models;
+using Reporting.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -6,13 +14,21 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
-using QuestPDF.Fluent;
-using QuestPDF.Helpers;
-using Reporting.Models;
+using Colors = QuestPDF.Helpers.Colors;
 
 namespace Reporting.Interfaces;
 public class ReportExporter : IReportExporter
 {
+    private readonly IDbAccess _dbAccess;
+    private readonly IConfiguration _config;
+
+    public ReportExporter(IDbAccess dbAccess, IConfiguration config)
+    {
+        _dbAccess = dbAccess;
+        _config = config;
+
+        Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+    }
     public void Export(DataTable data, string filePath, string format)
     {
         switch (format.ToLower())
@@ -36,15 +52,78 @@ public class ReportExporter : IReportExporter
 
     public void Export(ReportJob reportJob, string filePath)
     {
+        var dataTables = new Dictionary<string, DataTable>();
+
+        Dictionary<string, object> parameters = new();
+
+        if (!string.IsNullOrWhiteSpace(reportJob.Parameters))
+        {
+            try
+            {
+                parameters = JsonConvert.DeserializeObject<Dictionary<string, object>>(reportJob.Parameters)
+                             ?? new Dictionary<string, object>();
+            }
+            catch (Exception paramEx)
+            {
+                Console.WriteLine($"Job '{reportJob.JobName}' skipped: Invalid parameters JSON — {paramEx.Message}");
+            }
+        }
+
+
+        // Main sheet
+        var data = _dbAccess.ExecuteStoredProcedure(reportJob.StoredProcedure, parameters);
+        if (data != null && data.Rows.Count > 0)
+        {
+            var sheetName = string.IsNullOrWhiteSpace(reportJob.SheetName) ? "MainSheet" : reportJob.SheetName;
+            dataTables[sheetName] = data;
+        }
+
+        // Additional sheets
+        if (reportJob.ExportExtension == "xlsx" &&
+            reportJob.ChildRecords == true &&
+            reportJob.AdditionalSheets?.Count > 0)
+        {
+            foreach (var sheet in reportJob.AdditionalSheets)
+            {
+                Dictionary<string, object> childParams = new();
+
+                if (!string.IsNullOrWhiteSpace(sheet.Parameters))
+                {
+                    try
+                    {
+                        childParams = JsonConvert.DeserializeObject<Dictionary<string, object>>(sheet.Parameters)
+                                      ?? new Dictionary<string, object>();
+                    }
+                    catch (Exception childEx)
+                    {
+                        Console.WriteLine($"Child sheet '{sheet.SheetName}' skipped: Invalid parameters JSON — {childEx.Message}");
+                        continue;
+                    }
+                }
+
+                var childData = _dbAccess.ExecuteStoredProcedure(sheet.StoredProcedure, childParams);
+                if (childData != null && childData.Rows.Count > 0)
+                {
+                    var childSheetName = string.IsNullOrWhiteSpace(sheet.SheetName)
+                        ? $"ChildSheet{reportJob.AdditionalSheets.IndexOf(sheet) + 1}"
+                        : sheet.SheetName;
+
+                    dataTables[childSheetName] = childData;
+                }
+            }
+        }
+
+
+
         switch (reportJob.ExportExtension.ToLower())
         {
             case "xlsx":
-                // TODO
+                DynamicExcelExporter.ExportDataTablesAndSaveOrReturn(dataTables, filePath);
                 break;
 
             case "csv":
 
-                //ExportToCsv(data, filePath);
+                ExportToCsv(data, filePath);
                 break;
 
             case "pdf":
@@ -72,8 +151,6 @@ public class ReportExporter : IReportExporter
 
         workbook.SaveAs(filePath);
     }
-
-
 
     // TODO: Need to be more detailed with formatting and timestamp. Code Improvement too
     private void ExportToCsv(DataTable data, string filePath)
@@ -138,5 +215,5 @@ public class ReportExporter : IReportExporter
 
     }
 
-   
+
 }

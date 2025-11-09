@@ -62,6 +62,7 @@ public class CronReportJobRunner : BackgroundService
 
                     if (next.HasValue && Math.Abs((now - next.Value).TotalSeconds) < 60)
                     {
+                        /*
                         Dictionary<string, object> parameters = new();
 
                         if (!string.IsNullOrWhiteSpace(job.Parameters))
@@ -79,12 +80,15 @@ public class CronReportJobRunner : BackgroundService
                         }
 
                         var data = _dbAccess.ExecuteStoredProcedure(job.StoredProcedure, parameters);
-                        var fullPath = Path.Combine(job.ExportPath, $"{job.ExportFileName}{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.{job.ExportExtension}");
-                        _reportExporter.Export(data, fullPath, job.ExportExtension);
-                        // Or if using the other Export method:
-                        _reportExporter.Export(job, fullPath);
 
-                        Console.WriteLine($"Job '{job.JobName}' completed: {fullPath}");
+
+                        // Or if using the other Export method:
+
+                        */
+
+                        var fullPath = Path.Combine(job.ExportPath, $"{job.ExportFileName}{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.{job.ExportExtension}");
+                        _reportExporter.Export(job, fullPath);
+                        Console.WriteLine($"Job '{job.JobName}' completed:");
                     }
                     else
                     {

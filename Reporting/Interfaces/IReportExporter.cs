@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 namespace Reporting.Interfaces;
 public interface IReportExporter
 {
+
+  
     /// <summary>
     /// Exports a DataTable to a file in the specified format.
     /// </summary>
