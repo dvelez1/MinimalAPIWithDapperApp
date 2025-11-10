@@ -72,7 +72,7 @@ public class ReportExporter : IReportExporter
 
         // Main sheet
         var data = _dbAccess.ExecuteStoredProcedure(reportJob.StoredProcedure, parameters);
-        if (data != null && data.Rows.Count > 0)
+        if (reportJob.ExportExtension == "xlsx" && data != null && data.Rows.Count > 0)
         {
             var sheetName = string.IsNullOrWhiteSpace(reportJob.SheetName) ? "MainSheet" : reportJob.SheetName;
             dataTables[sheetName] = data;
@@ -134,7 +134,6 @@ public class ReportExporter : IReportExporter
                 throw new NotSupportedException($"Unsupported format:");
         }
 
-        throw new NotImplementedException();
     }
 
 

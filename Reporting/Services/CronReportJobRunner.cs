@@ -62,30 +62,6 @@ public class CronReportJobRunner : BackgroundService
 
                     if (next.HasValue && Math.Abs((now - next.Value).TotalSeconds) < 60)
                     {
-                        /*
-                        Dictionary<string, object> parameters = new();
-
-                        if (!string.IsNullOrWhiteSpace(job.Parameters))
-                        {
-                            try
-                            {
-                                parameters = JsonConvert.DeserializeObject<Dictionary<string, object>>(job.Parameters)
-                                             ?? new Dictionary<string, object>();
-                            }
-                            catch (Exception paramEx)
-                            {
-                                Console.WriteLine($"Job '{job.JobName}' skipped: Invalid parameters JSON — {paramEx.Message}");
-                                continue;
-                            }
-                        }
-
-                        var data = _dbAccess.ExecuteStoredProcedure(job.StoredProcedure, parameters);
-
-
-                        // Or if using the other Export method:
-
-                        */
-
                         var fullPath = Path.Combine(job.ExportPath, $"{job.ExportFileName}{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.{job.ExportExtension}");
                         _reportExporter.Export(job, fullPath);
                         Console.WriteLine($"Job '{job.JobName}' completed:");
