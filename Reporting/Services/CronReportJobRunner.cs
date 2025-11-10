@@ -60,6 +60,7 @@ public class CronReportJobRunner : BackgroundService
 
                     var next = cron.GetNextOccurrence(now.AddMinutes(-1), TimeZoneInfo.Local);
 
+                    //TODO: Fix because run Sunday at 8:05 pm is not working correctly: Execute 2 reports instead of 1
                     if (next.HasValue && Math.Abs((now - next.Value).TotalSeconds) < 60)
                     {
                         var fullPath = Path.Combine(job.ExportPath, $"{job.ExportFileName}{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.{job.ExportExtension}");
