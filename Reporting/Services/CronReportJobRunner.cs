@@ -98,7 +98,11 @@ public class CronReportJobRunner : BackgroundService
         var groupedSheets = sheets
             .Where(s => s.JobId != 0)
             .GroupBy(s => s.JobId)
-            .ToDictionary(g => g.Key, g => g.ToList());
+                .ToDictionary(
+                g => g.Key,
+                g => g.OrderBy(s => s.SortOrder).ToList()
+    );
+
 
         foreach (var job in jobs)
         {
